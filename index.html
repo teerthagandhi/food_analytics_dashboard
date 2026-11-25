@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>IITB Mess Food Waste</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* VOICE: a civic data desk, plain and exact, finding first.
+   IDEA: the mess logbook, read as a daily ledger of kilograms.
+   PICTURE: campus trend and calendar ledger, teal days, amber highs, coral spikes.
+   COLOUR and TYPE: light ground, teal lead, amber attention, coral alarm; Inter throughout.
+   LAYOUT: sticky tabs and filters, wide cards stacking to one column under 760px. */
+:root{color-scheme:light dark;
+--bg:light-dark(#F4F7F8,#0E1417);--card:light-dark(#FFFFFF,#151D22);--ink:light-dark(#16232A,#E5ECEF);--mute:light-dark(#5A6870,#90A0A8);--line:light-dark(#DCE3E6,#26323A);--soft:light-dark(#EEF2F4,#1C262C);
+--teal:light-dark(#1D7C7A,#45B3AA);--teal2:light-dark(#2E8C8C,#3A9E97);--tealsoft:light-dark(#E0F0EE,#173532);--tealink:light-dark(#145A58,#8FD8D0);
+--amber:light-dark(#E9A31E,#F2B544);--ambersoft:light-dark(#FBEFD3,#3A2E12);--amberink:light-dark(#835600,#F5C76A);
+--coral:light-dark(#DA5741,#F07A63);--coralsoft:light-dark(#FBE4DF,#3D1F19);--coralink:light-dark(#AE3A26,#F6A190)}
+:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.55 Inter,system-ui,-apple-system,"Segoe UI",sans-serif;overflow-x:clip;font-variant-numeric:tabular-nums}
+a{color:var(--teal)}
+.wrap{max-width:1240px;margin:0 auto;padding:0 max(3vw,14px)}
+header.top{background:var(--card);border-bottom:1px solid var(--line)}
+.hd{display:flex;align-items:center;justify-content:space-between;gap:8px 24px;flex-wrap:wrap;min-height:60px}
+.brand h1{font-size:17px;line-height:1.2;margin:0;font-weight:600}
+.brand p{margin:1px 0 0;color:var(--mute);font-size:12px}
+nav.tabs{display:flex;gap:2px;overflow-x:auto;scrollbar-width:none;align-self:stretch}
+nav.tabs a{flex:none;display:flex;align-items:center;text-decoration:none;color:var(--mute);font-weight:500;font-size:14px;padding:0 12px;border-bottom:2px solid transparent}
+nav.tabs a.on{color:var(--ink);border-bottom-color:var(--teal)}
+.bar{position:sticky;top:0;z-index:5;background:color-mix(in srgb,var(--bg) 92%,transparent);backdrop-filter:blur(6px);border-bottom:1px solid var(--line)}
+.filters{display:flex;gap:6px 14px;flex-wrap:wrap;align-items:center;padding-top:8px;padding-bottom:8px}
+.filters label{font-size:12px;color:var(--mute);display:flex;gap:6px;align-items:center}
+.filters select{min-height:34px;padding:5px 8px;font-size:13px}
+.filters .tog{min-height:34px;padding:4px 12px}
+.togs{display:flex;gap:8px;margin-left:auto;flex-wrap:wrap}
+.capnote{display:none;grid-template-columns:auto 1fr auto;gap:6px 14px;align-items:center;background:var(--ambersoft);color:var(--ink);border-radius:12px;padding:12px 16px;margin:8px 0 4px;font-size:14px;line-height:1.45}
+.capnote.on{display:grid}.capnote b{color:var(--amberink);font-weight:600}
+.capnote button{background:transparent;border-color:var(--amber);color:var(--amberink);min-height:34px;font-size:13px}
+@media(max-width:600px){.capnote{grid-template-columns:1fr}}
+select,button{font:inherit;font-size:14px;color:var(--ink);background:var(--card);border:1px solid var(--line);border-radius:8px;padding:7px 10px;min-height:38px;cursor:pointer}
+button:focus-visible,select:focus-visible,a:focus-visible{outline:2px solid var(--teal);outline-offset:2px}
+.tog{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--ink);border:1px solid var(--line);border-radius:20px;padding:6px 12px;background:var(--card);cursor:pointer;min-height:38px}
+.tog[aria-pressed=true]{background:var(--tealsoft);border-color:var(--teal2);color:var(--tealink)}
+main{padding:18px 0 40px}
+.view{display:none}.view.on{display:block}
+.lead{margin:6px 0 18px}.lead h2{font-size:clamp(22px,2.8vw,30px);line-height:1.2;margin:0 0 6px;font-weight:600;text-wrap:balance;max-width:40ch}
+.lead p{margin:0;color:var(--mute);max-width:72ch}
+.hero{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:18px 48px;align-items:center;background:var(--tealsoft);border-radius:16px;padding:clamp(20px,3vw,32px);margin:8px 0 16px}
+.hero .big{font-size:clamp(40px,5.4vw,60px);font-weight:600;line-height:1;color:var(--tealink);letter-spacing:-.015em;white-space:nowrap}
+.hero .bl{font-size:clamp(16px,1.6vw,19px);font-weight:500;margin-top:10px;line-height:1.35;text-wrap:balance}
+.hero .ctx{font-size:13px;color:var(--mute);margin-top:8px}
+.hero ul{list-style:none;margin:0;padding:0;display:grid;gap:12px 14px;align-items:baseline}
+.hero ul{grid-template-columns:auto 1fr}.hero li{display:contents;gap:12px;align-items:baseline;font-size:14px;line-height:1.4}
+.hero li b{font-size:22px;font-weight:600;text-align:right;white-space:nowrap;line-height:1.2}
+.hero li span{align-self:center;font-size:14px;line-height:1.4}
+.hero li span{color:var(--ink)}
+.lg{display:flex;gap:16px;flex-wrap:wrap;font-size:12px;color:var(--mute);margin:-4px 0 8px;align-items:center}
+.lg svg{vertical-align:middle;margin-right:6px}
+@media(max-width:760px){.hero{grid-template-columns:1fr}}
+.grid{display:grid;gap:14px}
+.g4{grid-template-columns:repeat(4,minmax(0,1fr))}.g2{grid-template-columns:repeat(2,minmax(0,1fr))}.g3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 18px}
+.card h3{font-size:15px;font-weight:600;margin:0}
+.card .sub{font-size:13px;color:var(--mute);margin:2px 0 12px}
+.kpi .l{font-size:12px;color:var(--mute)}.kpi .v{font-size:clamp(22px,2.6vw,28px);font-weight:600;line-height:1.2;margin:2px 0}.kpi .n{font-size:12px;color:var(--mute)}
+.fig{position:relative;width:100%}
+.fig svg,.fig canvas{display:block;width:100%}
+.row{display:flex;align-items:center;gap:10px;font-size:13px;padding:3px 0}
+.row .nm{width:92px;flex:none;white-space:nowrap}
+.row .tr{flex:1;height:12px;background:var(--soft);border-radius:3px;overflow:hidden;display:flex}
+.row .tr i{display:block;height:100%}
+.row .val{width:64px;flex:none;text-align:right;color:var(--mute)}
+.click{cursor:pointer;border-radius:6px}.click:hover{background:var(--soft)}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--mute);margin-top:10px;align-items:center}
+.sw{display:inline-block;width:11px;height:11px;border-radius:3px;vertical-align:-1px;margin-right:5px}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{font-weight:500;color:var(--mute);text-align:left;padding:6px 8px;border-bottom:1px solid var(--line)}
+td{padding:7px 8px;border-bottom:1px solid var(--line)}
+td.num,th.num{text-align:right;white-space:nowrap}
+.tag{display:inline-block;font-size:12px;padding:1px 8px;border-radius:10px;white-space:nowrap}
+.t-coral{background:var(--coralsoft);color:var(--coralink)}.t-amber{background:var(--ambersoft);color:var(--amberink)}.t-teal{background:var(--tealsoft);color:var(--tealink)}.t-grey{background:var(--soft);color:var(--mute)}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
+.chip{font-size:13px;padding:6px 12px;border-radius:18px;border:1px solid var(--line);background:var(--card);cursor:pointer;color:var(--ink);min-height:36px}
+.chip.on{background:var(--teal);color:#fff;border-color:var(--teal)}
+.sm{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.smc{border:1px solid var(--line);border-radius:10px;padding:8px 10px}
+.smc .t{font-size:12px;display:flex;justify-content:space-between;gap:6px}
+#tip{position:fixed;pointer-events:none;background:var(--ink);color:var(--bg);font-size:12px;padding:6px 9px;border-radius:6px;opacity:0;transition:opacity .1s;z-index:20;max-width:240px;line-height:1.4}
+.note{font-size:12px;color:var(--mute);margin-top:10px}
+.mtool{display:flex;gap:10px 18px;flex-wrap:wrap;align-items:center}
+#dishQ{font:inherit;font-size:14px;color:var(--ink);background:var(--card);border:1px solid var(--line);border-radius:18px;padding:7px 14px;min-height:36px;min-width:220px;flex:1;max-width:320px}
+.cal7{display:grid;grid-template-columns:86px repeat(7,minmax(118px,1fr));gap:6px;min-width:930px}
+.cal7 .wh{font-size:12px;color:var(--mute);font-weight:500;padding:0 4px}
+.cal7 .wk{font-size:12px;color:var(--mute);padding:8px 4px 0;line-height:1.3}
+.cell{border:1px solid transparent;border-radius:10px;padding:8px 9px;min-height:118px;cursor:pointer;text-align:left;font:inherit;color:var(--ink);display:flex;flex-direction:column;gap:4px;background:var(--soft)}
+.cell:hover{border-color:var(--mute)}
+.cell.sel{border:2px solid var(--ink);padding:7px 8px}
+.cell.part{background:transparent;border:1px dashed var(--mute)}
+.cell.dim{opacity:.35}.cell.hit{box-shadow:0 0 0 2px var(--teal) inset}
+.cell.empty{background:transparent;cursor:default;min-height:0}
+.cell .top{display:flex;justify-content:space-between;align-items:baseline;gap:4px}
+.cell .dn{font-size:12px;color:var(--mute)}
+.cell .kg{font-size:15px;font-weight:600;white-space:nowrap}
+.cell .pc{font-size:11px;font-weight:500}
+.cell ul{list-style:none;margin:2px 0 0;padding:0;font-size:12px;line-height:1.35}
+.cell li{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cell li mark{background:var(--teal);color:#fff;border-radius:3px;padding:0 2px}
+.cell .ev{font-size:11px;color:var(--amberink)}
+.days{display:flex;gap:3px;flex-wrap:wrap}
+.day{width:34px;height:40px;border-radius:6px;border:1px solid transparent;font-size:11px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;line-height:1.1;color:var(--ink)}
+.day.sel{outline:2px solid var(--ink);outline-offset:1px}
+.day.part{border:1px dashed var(--mute);background:transparent!important}
+.meal{display:grid;grid-template-columns:90px 1fr;gap:6px 12px;font-size:14px}
+.meal dt{color:var(--mute)}.meal dd{margin:0}
+.fc{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:10px}
+.fcc{border:1px solid var(--line);border-radius:10px;padding:10px 12px;cursor:pointer;background:var(--card);text-align:left;font:inherit;color:inherit}
+.fcc.on{border-color:var(--amber);background:var(--ambersoft)}
+.fcc .p{font-size:22px;font-weight:600}
+.dl{display:flex;gap:10px;flex-wrap:wrap}
+.dl button{background:var(--teal);color:#fff;border-color:var(--teal)}
+.err{padding:40px;text-align:center;color:var(--mute)}
+ul.f{margin:0;padding-left:18px}ul.f li{margin:4px 0}
+@media(max-width:900px){.g4{grid-template-columns:repeat(2,minmax(0,1fr))}.g3{grid-template-columns:1fr}}
+@media(max-width:600px){.togs{margin-left:0}.bar{position:static}.filters label{flex:1 1 100%}.filters select{flex:1;width:auto}.filters .tog{margin-left:0}.hd{padding-top:10px}nav.tabs a{padding:10px}}
+@media(max-width:760px){.g2{grid-template-columns:1fr}.row .nm{width:78px}}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<header class="top"><div class="wrap hd">
+<div class="brand"><h1>IITB mess food waste</h1><p id="span">Living Lab LL07</p></div>
+<nav class="tabs" aria-label="Sections">
+<a href="#overview" data-v="overview">Overview</a><a href="#messes" data-v="messes">Mess profiles</a><a href="#menus" data-v="menus">Menu explorer</a><a href="#forecast" data-v="forecast">Forecast</a><a href="#data" data-v="data">Data and downloads</a></nav>
+</div></header>
+<div class="bar"><div class="wrap filters" id="filters">
+<label>Mess <select id="fMess"></select></label>
+<label>Months <select id="fFrom" aria-label="From month"></select><span>to</span><select id="fTo" aria-label="To month"></select></label>
+<label>Waste <select id="fType"><option value="food">Wet + veg cutting</option><option value="wet">Wet only</option><option value="veg">Veg cutting only</option></select></label>
+<div class="togs"><button class="tog" id="fCap" aria-pressed="false">Per student</button><button class="tog" id="fTrust" aria-pressed="true">Trusted data only</button></div>
+</div></div>
+<main class="wrap" id="app"><div class="capnote" id="capNote" role="status"><b>Per student</b><span>Waiting for headcount data. Per-student waste needs the number of students eating at each mess, by month or by day. Until that arrives, every figure below stays in total kg.</span><button id="capOff">Show totals</button></div><div class="err" id="loading">Loading data…</div>
+
+<section class="view" id="v-overview">
+<div class="hero" id="ovHero"></div>
+<div class="card"><h3>Campus trend</h3><p class="sub" id="trendSub"></p><div class="lg" id="trendLg"></div><div class="fig" id="trend" style="height:240px"></div></div>
+<div class="grid g2" style="margin-top:14px">
+<div class="card"><h3>Mess ranking</h3><p class="sub">Average kg per day. Click a mess to open its profile.</p><div id="rank"></div></div>
+<div class="card"><h3>Campus map</h3><p class="sub">Each circle is one mess, sized by kg per day. Click to open its profile.</p><div class="fig" id="map" style="height:330px"></div><p class="note">Pin positions are placeholders until they are checked against the campus map.</p></div>
+</div>
+<div class="card" style="margin-top:14px"><h3>Waste calendar</h3><p class="sub">One strip per mess, one cell per day, coloured against that mess's own normal day.</p><div class="fig" id="cal"></div>
+<div class="legend"><span>Below normal</span><span id="calLeg" style="display:inline-flex;gap:2px"></span><span>Above normal</span><span><span class="sw" style="background:var(--soft);outline:1px dashed var(--mute)"></span>no data or left out</span></div></div>
+<div class="grid g2" style="margin-top:14px">
+<div class="card"><h3>Plate vs prep</h3><p class="sub">How much of each mess's waste comes from vegetable cutting in the kitchen.</p><div id="prep"></div><div class="legend"><span><span class="sw" style="background:var(--amber)"></span>veg cutting</span><span><span class="sw" style="background:var(--tealsoft);outline:1px solid var(--teal2)"></span>wet (plate and serving)</span></div></div>
+<div class="card"><h3>Spike log</h3><p class="sub">Unusual days and repeating patterns in the selected period.</p><div id="spikes"></div></div>
+</div>
+<div class="card" style="margin-top:14px"><h3>Every mess on one scale</h3><p class="sub">Monthly average, where 100 is that mess's own average. Big and small messes compare fairly.</p><div class="sm" id="sm"></div></div>
+</section>
+
+<section class="view" id="v-messes">
+<div class="chips" id="messChips"></div>
+<div class="hero" id="mpHero"></div>
+<div class="card"><h3>Daily waste</h3><p class="sub">What this mess logged each day. Shaded months were copied from another month in the source file.</p><div class="lg lgx"></div><div class="fig" id="mpLine" style="height:240px"></div></div>
+<div class="grid g3" style="margin-top:14px">
+<div class="card"><h3>By month</h3><p class="sub">Average kg per day</p><div id="mpMonth"></div></div>
+<div class="card"><h3>By weekday</h3><p class="sub">100 is this mess's normal day</p><div id="mpDow"></div></div>
+<div class="card"><h3>Next 7 days</h3><p class="sub">Expected kg per day with likely range</p><div id="mpFc"></div></div>
+</div>
+<div class="card" style="margin-top:14px"><h3>Flagged days</h3><p class="sub">Every unusual day logged for this mess</p><div id="mpSpikes"></div></div>
+</section>
+
+<section class="view" id="v-menus">
+<div class="hero" id="mnHero"></div>
+<div class="card">
+<div class="mtool">
+<div class="chips" id="menuChips" style="margin:0"></div>
+<div class="chips" id="mealChips" style="margin:0"></div>
+<input id="dishQ" type="search" placeholder="Find a dish, e.g. biryani" aria-label="Find a dish" autocomplete="off">
+</div>
+<p class="note" id="dishSum" style="margin:4px 0 12px;min-height:1.5em"></p>
+<div class="scroll"><div class="cal7" id="menuCal"></div></div>
+<div class="legend"><span>Wet waste vs this mess's normal day:</span><span><span class="sw" style="background:var(--tealsoft)"></span>lower</span><span><span class="sw" style="background:var(--soft)"></span>about normal</span><span><span class="sw" style="background:var(--ambersoft)"></span>higher</span><span><span class="sw" style="background:var(--coralsoft)"></span>much higher</span><span><span class="sw" style="outline:1px dashed var(--mute)"></span>partial log</span></div>
+</div>
+<div class="grid g2" style="margin-top:14px">
+<div class="card" id="menuDay"></div>
+<div class="card"><h3>Dishes compared</h3><p class="sub">Average wet waste on days a dish was served, as % of normal. Dishes served at least 3 times. Click one to find it in the calendar.</p><div id="dishTable" style="max-height:460px;overflow:auto"></div><p class="note">Day-to-day swings are around 25%, so differences under that are not reliable yet. Logging waste per meal would make this much sharper.</p></div>
+</div>
+</section>
+
+<section class="view" id="v-forecast">
+<div class="hero" id="fcHero"></div>
+<div class="card"><h3 id="fcChartT"></h3><p class="sub">Last six weeks of actual waste, then the forecast with its likely range</p><div class="lg"><span><svg width="22" height="10"><line x1="0" x2="22" y1="5" y2="5" stroke="var(--teal)" stroke-width="2.5"/></svg>7-day average</span><span><svg width="22" height="10"><line x1="0" x2="22" y1="5" y2="5" stroke="var(--amber)" stroke-width="2.5" stroke-dasharray="5 3"/></svg>forecast</span><span><svg width="16" height="10"><rect width="16" height="10" rx="2" fill="var(--ambersoft)"/></svg>likely range</span></div><div class="fig" id="fcChart" style="height:260px"></div></div>
+<div class="card" style="margin-top:14px"><h3>Tomorrow, mess by mess</h3><p class="sub">Click a mess to chart it. Error is the average miss when tested on September.</p><div class="fc" id="fcCards"></div></div>
+</section>
+
+<section class="view" id="v-data">
+<div class="lead"><h2>What the data can and cannot tell us</h2><p>The PHO file was cleaned before any chart was drawn. These are the problems found and how each chart handles them.</p></div>
+<div class="grid g2">
+<div class="card"><h3>Data trust by month</h3><p class="sub">Copied months repeat another month's numbers exactly and are left out while "Trusted data only" is on.</p><div id="trust"></div><div class="legend"><span><span class="sw" style="background:var(--teal2)"></span>recorded</span><span><span class="sw" style="background:var(--amber)"></span>copied from another month</span><span><span class="sw" style="background:var(--soft)"></span>missing</span></div></div>
+<div class="card"><h3>Downloads</h3><p class="sub">CSV files that open in Excel or Google Sheets</p><div class="dl"><button id="dlAll">Cleaned waste data</button><button id="dlView">Current filtered view</button><button id="dlMenu">Menus</button></div><p class="note" id="dlMsg"></p>
+<h3 style="margin-top:18px">How the data was cleaned</h3><ul class="f note" id="method"></ul></div>
+</div>
+</section>
+</main>
+<div id="tip"></div>
+
+<script>
+{
+const $=s=>document.querySelector(s);
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fmt=n=>n==null||isNaN(n)?'–':Math.round(n).toLocaleString('en-IN');
+const kg=n=>fmt(n)+'\u00a0kg';
+const pct=n=>n==null||isNaN(n)?'–':Math.round(n)+'%';
+const MON=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const DOW=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+const ord=d=>d+((d%100>=11&&d%100<=13)?'th':({1:'st',2:'nd',3:'rd'}[d%10]||'th'));
+const slug=m=>m.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/-$/,'');
+const css=v=>getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+const median=a=>{const b=a.filter(x=>x!=null&&!isNaN(x)).sort((x,y)=>x-y);if(!b.length)return null;const h=b.length>>1;return b.length%2?b[h]:(b[h-1]+b[h])/2};
+const mean=a=>{const b=a.filter(x=>x!=null&&!isNaN(x));return b.length?b.reduce((s,x)=>s+x,0)/b.length:null};
+const quant=(a,q)=>{const b=a.slice().sort((x,y)=>x-y);if(!b.length)return null;const i=(b.length-1)*q,l=Math.floor(i);return b[l]+(b[Math.min(l+1,b.length-1)]-b[l])*(i-l)};
+const tip=$('#tip');
+const showTip=(e,h)=>{tip.innerHTML=h;tip.style.opacity=1;const x=Math.min(e.clientX+14,innerWidth-250),y=e.clientY+14>innerHeight-80?e.clientY-60:e.clientY+14;tip.style.left=x+'px';tip.style.top=y+'px'};
+const hideTip=()=>tip.style.opacity=0;
+const MAP={'H-01':[60,74],'H-02':[72,74],'H-03':[84,72],'H-04':[90,58],'H-05':[56,58],'H-06':[46,70],'H-7/8/21':[42,48],'H-9':[30,62],'H-10':[14,72],'H-11':[34,78],'H-12/13/14':[20,34],'H-15':[40,24],'H-16':[56,24],'H-17':[12,52],'H-18':[66,42],'H-19':[80,44],'Tansa House':[92,30]};
+
+let D,M,S={mess:'all',from:0,to:8,type:'food',trust:true},view='overview',pMess='H-17',mMess='H-17',mDay=null,fMess='H-17';
+
+const ready=Promise.all([fetch('waste.json').then(r=>r.json()),fetch('menus.json').then(r=>r.json())]);
+ready.then(([w,mn])=>{build(w,mn);$('#loading').remove();init()}).catch(e=>{$('#loading').textContent='Could not load the data files. '+e.message});
+
+function build(w,mn){
+  const dates=[...new Set(w.rows.map(r=>r[0]))].sort();
+  const idx=Object.fromEntries(dates.map((d,i)=>[d,i]));
+  const messes=w.messes, by={};
+  messes.forEach(m=>by[m]=dates.map(()=>null));
+  w.rows.forEach(([d,m,wt,vg,s])=>{if(!by[m])return;by[m][idx[d]]={w:wt,v:vg,s,f:(wt==null&&vg==null)?null:(wt||0)+(vg||0)}});
+  const dt=dates.map(d=>new Date(d+'T00:00:00'));
+  const months=[...new Set(dates.map(d=>d.slice(0,7)))];
+  // flags on food values, copied months ignored
+  messes.forEach(m=>{const a=by[m];const vals=a.map(r=>r&&r.s!=='c'?r.f:null);
+    for(let i=0;i<a.length;i++){const r=a[i];if(!r)continue;const win=[];for(let j=Math.max(0,i-7);j<=Math.min(a.length-1,i+7);j++)if(vals[j]!=null)win.push(vals[j]);
+      if(win.length<5||r.f==null){r.base=null;continue}const b=median(win),mad=median(win.map(x=>Math.abs(x-b)))||b*0.05;
+      r.base=b;r.ratio=r.f/b;r.z=(r.f-b)/(1.4826*mad);
+      if(r.s==='c')r.flag=null;else if(r.ratio>=3&&r.z>=4)r.flag='typo';else if(r.ratio>=1.45&&r.z>=3.5)r.flag='spike';else if(r.ratio<=0.5)r.flag='low';else r.flag=null}});
+  D={dates,dt,idx,messes,by,months,copied:w.copied,source:w.source};
+  // menus
+  const mrows=mn.rows.map(([d,m,meal,dish])=>({d,m,meal,dish}));
+  M={rows:mrows,messes:[...new Set(mrows.map(r=>r.m))]};
+}
+const monthOf=i=>D.months.indexOf(D.dates[i].slice(0,7));
+const inRange=i=>{const k=monthOf(i);return k>=S.from&&k<=S.to};
+function val(r,type=S.type,trust=S.trust){if(!r)return null;if(trust&&(r.s==='c'||r.flag==='typo'))return null;
+  if(type==='wet')return r.w;if(type==='veg')return r.v;return r.f}
+const sel=()=>S.mess==='all'?D.messes:[S.mess];
+function messAvg(m,lo=S.from,hi=S.to,type,trust){const a=[];D.by[m].forEach((r,i)=>{const k=monthOf(i);if(k>=lo&&k<=hi){const v=val(r,type,trust);if(v!=null)a.push(v)}});return {avg:mean(a),n:a.length,sum:a.reduce((s,x)=>s+x,0)}}
+
+function init(){
+  const fm=$('#fMess');fm.innerHTML='<option value="all">All messes</option>'+D.messes.map(m=>`<option>${esc(m)}</option>`).join('');
+  const mo=D.months.map((m,i)=>`<option value="${i}">${MON[+m.slice(5)-1]} ${m.slice(0,4)}</option>`).join('');
+  $('#fFrom').innerHTML=mo;$('#fTo').innerHTML=mo;S.to=D.months.length-1;$('#fTo').value=S.to;
+  $('#span').textContent=`Living Lab LL07 · PHO logs · ${D.messes.length} messes, ${MON[D.dt[0].getMonth()]} to ${MON[D.dt[D.dt.length-1].getMonth()]} ${D.dt[0].getFullYear()}`;
+  fm.onchange=()=>{S.mess=fm.value;render()};
+  $('#fFrom').onchange=e=>{S.from=+e.target.value;if(S.to<S.from){S.to=S.from;$('#fTo').value=S.to}render()};
+  $('#fTo').onchange=e=>{S.to=+e.target.value;if(S.from>S.to){S.from=S.to;$('#fFrom').value=S.from}render()};
+  $('#fType').onchange=e=>{S.type=e.target.value;render()};
+  const setCap=on=>{S.cap=on;$('#fCap').setAttribute('aria-pressed',on);$('#capNote').classList.toggle('on',on&&(view==='overview'||view==='messes'))};
+  $('#fCap').onclick=()=>setCap(!S.cap);$('#capOff').onclick=()=>setCap(false);window._setCap=setCap;
+  $('#fTrust').onclick=e=>{S.trust=!S.trust;e.currentTarget.setAttribute('aria-pressed',S.trust);render()};
+  $('#dishQ').oninput=()=>{clearTimeout(window._dq);window._dq=setTimeout(renderMenus,150)};
+  $('#dlAll').onclick=()=>download('iitb_mess_waste_clean.csv',csvAll(false));
+  $('#dlView').onclick=()=>download('iitb_mess_waste_filtered.csv',csvAll(true));
+  $('#dlMenu').onclick=()=>download('iitb_mess_menus.csv',csvMenus());
+  addEventListener('hashchange',route);
+  const ro=new ResizeObserver(()=>{clearTimeout(ro.t);ro.t=setTimeout(render,120)});ro.observe($('#app'));
+  route();
+}
+function route(){const h=location.hash.slice(1)||'overview';
+  if(h.startsWith('mess-')){const m=D.messes.find(x=>slug(x)===h.slice(5));if(m)pMess=m;view='messes'}
+  else view=['overview','messes','menus','forecast','data'].includes(h)?h:'overview';
+  document.querySelectorAll('nav.tabs a').forEach(a=>a.classList.toggle('on',a.dataset.v===view));
+  document.querySelectorAll('.view').forEach(v=>v.classList.toggle('on',v.id==='v-'+view));
+  $('#fMess').parentElement.style.display=view==='overview'?'':'none';
+  $('.bar').style.display=(view==='overview'||view==='messes')?'':'none';
+  if(window._setCap)window._setCap(!!S.cap);
+  render();scrollTo({top:0});
+}
+function render(){if(!D)return;({overview:renderOverview,messes:renderMess,menus:renderMenus,forecast:renderForecast,data:renderData})[view]()}
+const go=m=>{location.hash='mess-'+slug(m)};
+
+/* ---------- shared drawing ---------- */
+function lineChart(el,pts,opt={}){ // pts: [{i,v,flag}] with possible null v
+  const W=el.clientWidth,H=el.clientHeight,pl=W<520?42:48,pr=10,pt=10,pb=24;
+  const vs=pts.map(p=>p.v).filter(v=>v!=null);const fcv=(opt.fc||[]).flatMap(f=>[f.hi,f.lo]);
+  if(!vs.length){el.innerHTML='<p class="note">No data for this selection.</p>';return}
+  let max=Math.max(...vs,...fcv)*1.08,min=Math.min(0,...vs);
+  const n=pts.length+(opt.fc?opt.fc.length:0);
+  const X=k=>pl+(W-pl-pr)*(n<=1?0.5:k/(n-1)),Y=v=>pt+(H-pt-pb)*(1-(v-min)/(max-min));
+  let s='';
+  const ticks=4;for(let t=0;t<=ticks;t++){const v=min+(max-min)*t/ticks;s+=`<line x1="${pl}" x2="${W-pr}" y1="${Y(v)}" y2="${Y(v)}" stroke="${css('--line')}"/><text x="${pl-6}" y="${Y(v)+4}" text-anchor="end" font-size="11" fill="${css('--mute')}">${fmt(v)}</text>`}
+  (opt.shade||[]).forEach(([a,b])=>{s+=`<rect x="${X(a)}" y="${pt}" width="${Math.max(2,X(b)-X(a))}" height="${H-pt-pb}" fill="${css('--ambersoft')}"/>`});
+  let lastM='';pts.forEach((p,k)=>{const d=D.dates[p.i];const m=d.slice(5,7);if(m!==lastM&&d.slice(8)<= '07'){lastM=m;s+=`<text x="${X(k)}" y="${H-6}" font-size="11" fill="${css('--mute')}">${MON[+m-1]}${W<520?'':' '+(+d.slice(8))}</text>`}});
+  const path=(arr,key)=>{let d='',on=false;arr.forEach((p,k)=>{const v=p[key];if(v==null){on=false;return}d+=(on?'L':'M')+X(k).toFixed(1)+','+Y(v).toFixed(1);on=true});return d};
+  const avg=pts.map((p,k)=>{const w=pts.slice(Math.max(0,k-6),k+1).map(q=>q.v).filter(v=>v!=null);return {a:w.length>=3?mean(w):null}});
+  {const ai=avg.map((p,k)=>p.a!=null?k:-1).filter(k=>k>=0);if(ai.length>1)s+=`<path d="${path(avg,'a')} L${X(ai[ai.length-1])},${Y(min)} L${X(ai[0])},${Y(min)} Z" fill="${css('--tealsoft')}" opacity=".7"/>`}
+  s+=`<path d="${path(pts,'v')}" fill="none" stroke="${css('--teal2')}" stroke-opacity=".45" stroke-width="1.3"/>`;
+  s+=`<path d="${path(avg,'a')}" fill="none" stroke="${css('--teal')}" stroke-width="2.4"/>`;
+  if(opt.fc){const o=pts.length-1,last=pts[o];const fc=opt.fc;
+    const up=fc.map((f,k)=>X(o+1+k)+','+Y(f.hi)).join(' '),lo=fc.map((f,k)=>X(o+1+k)+','+Y(f.lo)).reverse().join(' ');
+    s+=`<polygon points="${up} ${lo}" fill="${css('--ambersoft')}"/>`;
+    s+=`<polyline points="${last.v!=null?X(o)+','+Y(last.v)+' ':''}${fc.map((f,k)=>X(o+1+k)+','+Y(f.p)).join(' ')}" fill="none" stroke="${css('--amber')}" stroke-width="2.2" stroke-dasharray="5 4"/>`;
+    s+=`<line x1="${X(o+.5)}" x2="${X(o+.5)}" y1="${pt}" y2="${H-pb}" stroke="${css('--mute')}" stroke-dasharray="2 3"/><text x="${X(o+.5)+5}" y="${pt+12}" font-size="11" fill="${css('--amberink')}">forecast</text>`}
+  pts.forEach((p,k)=>{if(p.flag&&p.v!=null){const c=p.flag==='low'?css('--amber'):css('--coral');s+=`<circle cx="${X(k)}" cy="${Y(p.v)}" r="3.6" fill="${c}" stroke="${css('--card')}" stroke-width="1.2"/>`}});
+  s+=`<line id="hl" y1="${pt}" y2="${H-pb}" stroke="${css('--mute')}" opacity="0"/>`;
+  el.innerHTML=`<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(opt.label||'Daily waste chart')}">${s}</svg>`;
+  const svg=el.querySelector('svg'),hl=svg.querySelector('#hl');
+  svg.onmousemove=e=>{const r=svg.getBoundingClientRect(),x=e.clientX-r.left;let k=Math.round((x-pl)/(W-pl-pr)*(n-1));if(k<0||k>=n){hideTip();return}
+    hl.setAttribute('x1',X(k));hl.setAttribute('x2',X(k));hl.setAttribute('opacity',.5);
+    if(k<pts.length){const p=pts[k];showTip(e,`<b>${fmtDate(p.i)}</b><br>${p.v==null?'no data':fmt(p.v)+' kg'}${p.flag?'<br>'+flagText(p.flag):''}${avg[k].a?'<br>7-day avg '+fmt(avg[k].a):''}`)}
+    else{const f=opt.fc[k-pts.length];showTip(e,`<b>${f.label}</b><br>expected ${fmt(f.p)} kg<br>likely ${fmt(f.lo)} to ${fmt(f.hi)}`)}};
+  svg.onmouseleave=()=>{hideTip();hl.setAttribute('opacity',0)};
+}
+const LEG=`<span><svg width="22" height="10"><line x1="0" x2="22" y1="5" y2="5" stroke="var(--teal2)" stroke-opacity=".45" stroke-width="1.4"/></svg>each day's total</span><span><svg width="22" height="10"><line x1="0" x2="22" y1="5" y2="5" stroke="var(--teal)" stroke-width="2.5"/></svg>7-day average (smooths daily noise)</span><span><svg width="10" height="10"><circle cx="5" cy="5" r="4" fill="var(--coral)"/></svg>flagged day</span>`;
+const hero=(el,big,bl,ctx,facts)=>{el.innerHTML=`<div><div class="big">${big}</div><div class="bl">${bl}</div><div class="ctx">${ctx}</div></div><ul>${facts.map(([v,t,c])=>`<li><b style="color:var(--${c||'tealink'})">${v}</b><span>${t}</span></li>`).join('')}</ul>`};
+const fmtDate=i=>{const d=D.dt[i];return `${DOW[(d.getDay()+6)%7]} ${d.getDate()} ${MON[d.getMonth()]}`};
+const flagText=f=>({typo:'Likely typo',spike:'Spike',low:'Very low, possible partial log'})[f];
+function bars(el,items,opt={}){ // items [{k,v,label,color,click,note}]
+  const max=opt.max||Math.max(...items.map(x=>x.v||0),1);
+  el.innerHTML=items.map((x,j)=>`<div class="row${x.click?' click':''}" data-j="${j}"${x.click?' tabindex="0" role="button"':''}><span class="nm">${esc(x.k)}</span><span class="tr"><i style="width:${x.v==null?0:Math.max(1,x.v/max*100)}%;background:${x.color||css('--teal2')}"></i></span><span class="val">${x.label!=null?x.label:fmt(x.v)}</span></div>`).join('');
+  el.querySelectorAll('.row').forEach(r=>{const x=items[+r.dataset.j];if(x.click){r.onclick=x.click;r.onkeydown=e=>{if(e.key==='Enter')x.click()}}
+    if(x.note){r.onmousemove=e=>showTip(e,x.note);r.onmouseleave=hideTip}});
+}
+
+/* ---------- overview ---------- */
+function campusSeries(){ // per day total; days left out as copied or typo are filled with that mess's average
+  const ms=sel(),avgs=Object.fromEntries(ms.map(m=>[m,messAvg(m).avg]));
+  const out=[];D.dates.forEach((d,i)=>{if(!inRange(i))return;let t=0,ok=0,flag=null;
+    ms.forEach(m=>{const r=D.by[m][i],v=val(r);if(v!=null){t+=v;ok++}else if(r&&val(r,S.type,false)!=null&&avgs[m]!=null){t+=avgs[m]}if(r&&(r.flag==='typo'||r.flag==='spike')&&!(S.trust&&r.flag==='typo'))flag='spike'});
+    out.push({i,v:ok?t:null,flag:ms.length===1?(D.by[ms[0]][i]||{}).flag||null:flag})});return out}
+function renderOverview(){
+  const ms=sel(),st=ms.map(m=>({m,...messAvg(m)})).filter(x=>x.avg!=null).sort((a,b)=>b.avg-a.avg);
+  const cs=campusSeries(),typical=median(cs.map(p=>p.v)),total=st.reduce((s,x)=>s+x.sum,0);
+  const tops=st.slice().sort((a,b)=>b.sum-a.sum),top2=tops.length>2?(tops[0].sum+tops[1].sum)/total*100:null;
+  let flags=0,typos=0;ms.forEach(m=>D.by[m].forEach((r,i)=>{if(r&&inRange(i)&&r.flag){if(r.flag==='typo')typos++;else if(r.flag==='spike')flags++}}));
+  const tname={food:'food',wet:'wet',veg:'veg-cutting'}[S.type];
+  const per=`${MON[S.from]} to ${MON[S.to]} 2026`,ctx=`${per} · ${S.trust?'trusted days only':'all days, including copied months'}`;
+  const nw=x=>`<span style="white-space:nowrap">${esc(x)}</span>`;
+  if(S.mess==='all')hero($('#ovHero'),kg(Math.round(typical/100)*100),`of ${tname} waste leaves IITB's messes on a typical day`,ctx,[
+    [pct(top2),`comes from the two biggest messes, ${nw(tops[0].m)} and ${nw(tops[1].m)}`,'tealink'],
+    [fmt(total/1000)+'\u00a0t',`logged in total across ${st.length} messes`,'tealink'],
+    [fmt(flags+typos),`unusual days flagged: ${flags} spikes and ${typos} likely typos`,'coralink']]);
+  else hero($('#ovHero'),kg(typical),`of ${tname} waste at ${nw(S.mess)} on a typical day`,ctx,[
+    [fmt(st[0]?st[0].n:0),'days with a reading','tealink'],[fmt(total/1000)+'\u00a0t','logged in total','tealink'],[fmt(flags+typos),'unusual days flagged','coralink']]);
+  $('#trendSub').textContent=S.mess==='all'?'How much food waste all messes logged each day. Days left out as copied or typos are filled with that mess\'s average.':'How much food waste this mess logged each day.';
+  $('#trendLg').innerHTML=LEG;
+  lineChart($('#trend'),cs,{label:'Daily campus waste'});
+  const all=D.messes.map(m=>({m,...messAvg(m)})).filter(x=>x.avg!=null).sort((a,b)=>b.avg-a.avg);
+  bars($('#rank'),all.map(x=>({k:x.m,v:x.avg,color:S.mess==='all'||S.mess===x.m?css('--teal2'):css('--line'),click:()=>go(x.m),note:`<b>${esc(x.m)}</b><br>${fmt(x.avg)} kg/day over ${x.n} days`})));
+  const pr=D.messes.map(m=>{const w=messAvg(m,S.from,S.to,'wet'),v=messAvg(m,S.from,S.to,'veg');return {m,s:w.sum+v.sum?v.sum/(w.sum+v.sum)*100:null}}).filter(x=>x.s!=null).sort((a,b)=>b.s-a.s);
+  $('#prep').innerHTML=pr.map(x=>`<div class="row"><span class="nm">${esc(x.m)}</span><span class="tr"><i style="width:${x.s}%;background:var(--amber)"></i><i style="flex:1;background:var(--tealsoft)"></i></span><span class="val">${pct(x.s)}</span></div>`).join('');
+  drawMap(all);drawCal();drawSpikes();drawSmall();
+}
+function drawMap(all){const el=$('#map'),W=el.clientWidth,H=el.clientHeight;const max=Math.max(...all.map(x=>x.avg));
+  const X=p=>p/100*W,Y=p=>p/100*H;let s=`<path d="M${X(8)},0 C${X(20)},${Y(14)} ${X(46)},${Y(6)} ${X(60)},${Y(12)} C${X(74)},${Y(18)} ${X(86)},${Y(8)} ${X(94)},0 Z" fill="${css('--tealsoft')}"/><text x="${X(50)}" y="${Y(6)}" text-anchor="middle" font-size="11" fill="${css('--tealink')}">Powai Lake</text>`;
+  s+=`<path d="M0,${Y(84)} C${X(30)},${Y(80)} ${X(60)},${Y(88)} ${W},${Y(82)}" stroke="${css('--line')}" stroke-width="6" fill="none"/><text x="${X(4)}" y="${Y(92)}" font-size="11" fill="${css('--mute')}">Main road</text>`;
+  const pins=all.filter(x=>MAP[x.m]).sort((a,b)=>b.avg-a.avg);
+  pins.forEach(x=>{const [px,py]=MAP[x.m],r=Math.max(6,Math.sqrt(x.avg/max)*Math.min(W,H)*0.085);const on=S.mess==='all'||S.mess===x.m;
+    s+=`<g class="pin" data-m="${esc(x.m)}" tabindex="0" role="button" aria-label="${esc(x.m)}, ${fmt(x.avg)} kg per day" style="cursor:pointer"><circle cx="${X(px)}" cy="${Y(py)}" r="${r}" fill="${on?css('--teal2'):css('--line')}" fill-opacity=".8" stroke="${css('--card')}" stroke-width="1.5"/><text x="${X(px)}" y="${Y(py)+r+12}" text-anchor="middle" font-size="11" fill="${css('--ink')}">${esc(x.m.replace('Tansa House','Tansa'))}</text></g>`});
+  el.innerHTML=`<svg width="${W}" height="${H}" role="img" aria-label="Campus map of messes">${s}</svg>`;
+  el.querySelectorAll('.pin').forEach(g=>{const m=g.dataset.m,x=pins.find(p=>p.m===m);g.onclick=()=>go(m);g.onkeydown=e=>{if(e.key==='Enter')go(m)};g.onmousemove=e=>showTip(e,`<b>${esc(m)}</b><br>${fmt(x.avg)} kg/day`);g.onmouseleave=hideTip})}
+const RAMP=()=>['#BFE2DD','#7CC4BB',css('--teal2'),css('--amber'),css('--coral')];
+const rampCol=r=>{const c=RAMP();if(r<0.85)return c[0];if(r<0.97)return c[1];if(r<1.12)return c[2];if(r<1.35)return c[3];return c[4]};
+function drawCal(){const el=$('#cal'),ms=sel(),days=D.dates.map((d,i)=>i).filter(inRange);const W=el.clientWidth,lab=W<520?62:92,rh=16,gap=3,H=ms.length*(rh+gap)+22;
+  const cw=(W-lab)/days.length;let s='';
+  ms.forEach((m,j)=>{const vs=days.map(i=>val(D.by[m][i]));const md=median(vs);const y=j*(rh+gap);
+    s+=`<text x="0" y="${y+12}" font-size="11" fill="${css('--ink')}">${esc(m.replace('Tansa House','Tansa'))}</text>`;
+    days.forEach((i,k)=>{const v=vs[k],r=D.by[m][i];const x=lab+k*cw;
+      if(v==null||!md)s+=`<rect x="${x}" y="${y}" width="${Math.max(cw-0.6,0.6)}" height="${rh}" fill="${css('--soft')}" opacity=".6"/>`;
+      else s+=`<rect x="${x}" y="${y}" width="${Math.max(cw-0.6,0.6)}" height="${rh}" fill="${r.flag==='typo'||r.flag==='spike'?css('--coral'):rampCol(v/md)}"/>`})});
+  let lm='';days.forEach((i,k)=>{const d=D.dates[i];if(d.slice(5,7)!==lm){lm=d.slice(5,7);s+=`<text x="${lab+k*cw}" y="${H-4}" font-size="11" fill="${css('--mute')}">${MON[+lm-1]}</text>`}});
+  el.innerHTML=`<svg width="${W}" height="${H}" role="img" aria-label="Waste calendar">${s}</svg>`;el.style.height=H+'px';
+  $('#calLeg').innerHTML=RAMP().map(c=>`<span class="sw" style="background:${c};margin:0"></span>`).join('');
+  const svg=el.querySelector('svg');svg.onmousemove=e=>{const r=svg.getBoundingClientRect(),x=e.clientX-r.left,y=e.clientY-r.top;const j=Math.floor(y/(rh+gap)),k=Math.floor((x-lab)/cw);
+    if(j<0||j>=ms.length||k<0||k>=days.length){hideTip();return}const m=ms[j],i=days[k],v=val(D.by[m][i]),rr=D.by[m][i];
+    showTip(e,`<b>${esc(m)}</b> · ${fmtDate(i)}<br>${v==null?(rr&&rr.s==='c'?'copied month, left out':'no data'):fmt(v)+' kg'}${rr&&rr.flag?'<br>'+flagText(rr.flag):''}`)};
+  svg.onmouseleave=hideTip;svg.onclick=e=>{const r=svg.getBoundingClientRect();const j=Math.floor((e.clientY-r.top)/(rh+gap));if(ms[j])go(ms[j])}}
+function recurring(m){ // day-of-month pattern across months
+  const g={};D.by[m].forEach((r,i)=>{if(!r||!r.ratio||r.s==='c'||!inRange(i))return;const dm=D.dt[i].getDate();(g[dm]=g[dm]||[]).push(r.ratio)});
+  const all=D.by[m].filter(r=>r&&r.f!=null&&r.s!=='c').map(r=>r.f),md=median(all),cv=md?median(all.map(x=>Math.abs(x-md)))/md:1;if(cv>0.15)return [];
+  return Object.entries(g).map(([d,a])=>({d:+d,a,hi:a.filter(x=>x>=1.4).length})).filter(x=>x.a.length>=4&&x.hi>=3&&x.hi>=x.a.length/3).map(x=>({d:x.d,r:mean(x.a.filter(y=>y>=1.4)),n:x.hi,of:x.a.length}))}
+function spikeList(ms){const out=[];ms.forEach(m=>D.by[m].forEach((r,i)=>{if(r&&r.flag&&inRange(i))out.push({m,i,r})}));
+  return out.sort((a,b)=>Math.abs(Math.log(b.r.ratio))-Math.abs(Math.log(a.r.ratio)))}
+function spikeTable(list,limit){if(!list.length)return '<p class="note">Nothing unusual in this period.</p>';
+  return `<table><thead><tr><th>Day</th><th>Mess</th><th class="num">Logged</th><th class="num">Usual</th><th>Read as</th></tr></thead><tbody>${list.slice(0,limit).map(x=>`<tr><td>${fmtDate(x.i)}</td><td>${esc(x.m)}</td><td class="num">${fmt(x.r.f)}</td><td class="num">${fmt(x.r.base)}</td><td><span class="tag ${x.r.flag==='low'?'t-amber':'t-coral'}">${x.r.flag==='typo'?'likely typo':x.r.flag==='spike'?'+'+Math.round((x.r.ratio-1)*100)+'%':'possible partial log'}</span></td></tr>`).join('')}</tbody></table>`}
+function drawSpikes(){const ms=sel();const rec=ms.flatMap(m=>recurring(m).map(x=>({m,...x})));
+  const list=spikeList(ms).filter(x=>x.r.flag!=='low');
+  $('#spikes').innerHTML=(rec.length?`<div style="margin-bottom:10px">${rec.map(x=>`<div class="row"><span class="tag t-amber">repeats</span><span>${esc(x.m)} jumps about ${pct((x.r-1)*100)} on the ${ord(x.d)} in ${x.n} of ${x.of} months. Check before treating these as typos.</span></div>`).join('')}</div>`:'')+spikeTable(list,8)+
+  `<p class="note">${spikeList(ms).filter(x=>x.r.flag==='low').length} very low days (possible partial logs) are listed on each mess profile.</p>`}
+function drawSmall(){const el=$('#sm');const ms=D.messes;
+  el.innerHTML=ms.map(m=>{const vals=D.months.map((mo,k)=>{const a=[];D.by[m].forEach((r,i)=>{if(monthOf(i)===k){const v=val(r);if(v!=null)a.push(v)}});return a.length>=8?mean(a):null});
+    const av=mean(vals);if(av==null)return '';const ix=vals.map(v=>v==null?null:v/av*100);const W=140,H=46;const X=k=>4+k*(W-8)/(D.months.length-1),Y=v=>H-4-(Math.min(Math.max(v,50),170)-50)/120*(H-8);
+    let d='',on=false;ix.forEach((v,k)=>{if(v==null){on=false;return}d+=(on?'L':'M')+X(k)+','+Y(v);on=true});
+    const mx=Math.max(...ix.filter(v=>v!=null)),mn=Math.min(...ix.filter(v=>v!=null));const alert=mx>=120?`<span style="color:var(--coralink)">peak ${Math.round(mx)}</span>`:mn<=75?`<span style="color:var(--amberink)">low ${Math.round(mn)}</span>`:'';
+    const dots=ix.map((v,k)=>v==null?'':`<circle cx="${X(k)}" cy="${Y(v)}" r="2" fill="${v>=120?css('--coral'):v<=75?css('--amber'):css('--teal')}"/>`).join('');
+    return `<div class="smc click" data-m="${esc(m)}" tabindex="0" role="button"><div class="t"><span>${esc(m)}</span>${alert}</div><svg viewBox="0 0 ${W} ${H}" width="100%" height="${H}"><line x1="0" x2="${W}" y1="${Y(100)}" y2="${Y(100)}" stroke="${css('--line')}" stroke-dasharray="3 3"/><path d="${d}" fill="none" stroke="${css('--teal')}" stroke-width="1.8"/>${dots}</svg></div>`}).join('');
+  el.querySelectorAll('.smc').forEach(c=>{c.onclick=()=>go(c.dataset.m);c.onkeydown=e=>{if(e.key==='Enter')go(c.dataset.m)}})}
+
+/* ---------- mess profile ---------- */
+function renderMess(){const m=pMess;
+  $('#messChips').innerHTML=D.messes.map(x=>`<button class="chip${x===m?' on':''}" data-m="${esc(x)}">${esc(x)}</button>`).join('');
+  $('#messChips').querySelectorAll('.chip').forEach(c=>c.onclick=()=>go(c.dataset.m));
+  const st=messAvg(m),all=D.messes.map(x=>({x,a:messAvg(x).avg})).filter(o=>o.a!=null).sort((a,b)=>b.a-a.a),rank=all.findIndex(o=>o.x===m)+1;
+  const w=messAvg(m,S.from,S.to,'wet'),v=messAvg(m,S.from,S.to,'veg'),vs=w.sum+v.sum?v.sum/(w.sum+v.sum)*100:null;
+  let rec=0,cop=0,mis=0;D.by[m].forEach((r,i)=>{if(!inRange(i))return;if(!r||r.f==null)mis++;else if(r.s==='c')cop++;else rec++});
+  const cm=Object.entries(D.copied).filter(([k])=>k.startsWith(m+'|')).map(([k,f])=>`${MON[+k.slice(-2)-1]} (copy of ${f})`);
+  const nfl=spikeList([m]).length;
+  hero($('#mpHero'),st.avg==null?'No data':kg(st.avg),`of ${({food:'food',wet:'wet',veg:'veg-cutting'})[S.type]} waste at ${esc(m)} on an average day`,
+    `${MON[S.from]} to ${MON[S.to]} 2026${cm.length?' · copied months: '+cm.join(', '):''}${M.messes.includes(m)?' · menus available in Menu explorer':''}`,[
+    ['#'+(rank||'–'),`largest of ${all.length} messes by daily waste`,'tealink'],
+    [pct(vs),'comes from vegetable cutting in the kitchen','amberink'],
+    [fmt(rec),`days recorded (${cop} copied, ${mis} missing)`,'tealink'],
+    [fmt(nfl),'unusual days flagged','coralink']]);
+  document.querySelector('.lgx').innerHTML=LEG;
+  const pts=[],shade=[];let s0=null;D.dates.forEach((d,i)=>{if(!inRange(i))return;const r=D.by[m][i];const k=pts.length;pts.push({i,v:val(r),flag:r&&r.flag&&!(S.trust&&r.flag==='typo')?r.flag:null});
+    const c=r&&r.s==='c';if(c&&s0==null)s0=k;if(!c&&s0!=null){shade.push([s0,k-1]);s0=null}});if(s0!=null)shade.push([s0,pts.length-1]);
+  lineChart($('#mpLine'),pts,{shade,label:m+' daily waste'});
+  bars($('#mpMonth'),D.months.map((mo,k)=>{if(k<S.from||k>S.to)return null;const a=messAvg(m,k,k);const c=D.copied[m+'|'+mo];return {k:MON[k],v:a.avg,color:c&&!S.trust?css('--amber'):css('--teal2'),label:a.avg==null?(c?'copied':'–'):fmt(a.avg),note:c?`Copied from ${c} in the source file`:null}}).filter(Boolean));
+  const dw=DOW.map(()=>[]);D.by[m].forEach((r,i)=>{if(r&&r.ratio&&inRange(i)&&r.s!=='c'&&!r.flag)dw[(D.dt[i].getDay()+6)%7].push(r.ratio)});
+  bars($('#mpDow'),DOW.map((d,k)=>{const a=mean(dw[k]);return {k:d,v:a?a*100:null,label:a?Math.round(a*100):'–',color:a&&a>1.08?css('--amber'):css('--teal2')}}),{max:130});
+  const f=forecast(m);$('#mpFc').innerHTML=f?f.next.map(x=>`<div class="row"><span class="nm">${x.label}</span><span class="tr"><i style="width:${x.lo/f.max*100}%;background:transparent"></i><i style="width:${(x.hi-x.lo)/f.max*100}%;background:var(--ambersoft)"></i></span><span class="val">${fmt(x.p)}</span></div>`).join('')+`<p class="note">Tested on September: off by ${pct(f.mape)} on an average day.</p>`:'<p class="note">Not enough recent data to forecast.</p>';
+  $('#mpSpikes').innerHTML=spikeTable(spikeList([m]),40);
+}
+
+/* ---------- forecast ---------- */
+const FC={};
+function dowFactors(m){const g=DOW.map(()=>[]);D.by[m].forEach((r,i)=>{if(r&&r.ratio&&r.s!=='c'&&!r.flag)g[(D.dt[i].getDay()+6)%7].push(r.ratio)});return g.map(a=>{const x=mean(a);return x?1+0.5*(x-1):1})}
+function predictAt(m,t,f){const a=[];for(let i=Math.max(0,t-28);i<t;i++){const r=D.by[m][i];if(r&&r.f!=null&&r.s!=='c'&&!r.flag)a.push(r.f)}if(a.length<8)return null;
+  const dow=(new Date(D.dt[0].getTime()+t*864e5).getDay()+6)%7;return median(a)*f[dow]}
+function forecast(m){if(FC[m])return FC[m];const f=dowFactors(m),n=D.dates.length,errs=[],ratios=[];
+  for(let t=n-30;t<n;t++){const r=D.by[m][t];if(!r||r.f==null||r.s==='c'||r.flag)continue;const p=predictAt(m,t,f);if(!p)continue;errs.push(Math.abs(r.f-p)/r.f);ratios.push(r.f/p)}
+  const p0=predictAt(m,n,f);if(!p0||errs.length<10)return FC[m]=null;const q1=quant(ratios,0.1),q9=quant(ratios,0.9);
+  const next=[];for(let k=0;k<7;k++){const t=n+k,p=predictAt(m,n,f)/f[(new Date(D.dt[0].getTime()+n*864e5).getDay()+6)%7]*f[(new Date(D.dt[0].getTime()+t*864e5).getDay()+6)%7];const d=new Date(D.dt[n-1].getTime()+(k+1)*864e5);
+    next.push({p,lo:p*q1,hi:p*q9,label:`${DOW[(d.getDay()+6)%7]} ${d.getDate()} ${MON[d.getMonth()]}`})}
+  return FC[m]={next,mape:mean(errs)*100,max:Math.max(...next.map(x=>x.hi))*1.05}}
+function renderForecast(){const fs=D.messes.map(m=>({m,f:forecast(m)})).filter(x=>x.f);if(!fs.find(x=>x.m===fMess))fMess=fs[0].m;
+  const tot=k=>fs.reduce((s,x)=>s+x.f.next[k].p,0),lo=fs.reduce((s,x)=>s+x.f.next[0].lo,0),hi=fs.reduce((s,x)=>s+x.f.next[0].hi,0);
+  const wm=fs.reduce((s,x)=>s+x.f.mape*x.f.next[0].p,0)/tot(0);
+  hero($('#fcHero'),kg(Math.round(tot(0)/100)*100),`of food waste expected across all messes on ${fs[0].f.next[0].label}`,
+    'Based on each mess\'s last four weeks and its weekday pattern, tested on every September day',[
+    [fmt(Math.round(lo/100)*100)+'\u2013'+fmt(Math.round(hi/100)*100),'kg is the likely range for tomorrow','amberink'],
+    [fmt(fs.reduce((s,x)=>s+x.f.next.reduce((a,b)=>a+b.p,0),0)/1000)+'\u00a0t','expected over the next 7 days','tealink'],
+    [pct(wm),'typical miss when tested on September','tealink']]);
+  const x=fs.find(o=>o.m===fMess),n=D.dates.length,pts=[];for(let i=n-42;i<n;i++){const r=D.by[fMess][i];pts.push({i,v:r&&r.s!=='c'&&r.flag!=='typo'?r.f:null,flag:r&&r.flag&&r.flag!=='typo'?r.flag:null})}
+  $('#fcChartT').textContent=`${fMess}: next 7 days`;lineChart($('#fcChart'),pts,{fc:x.f.next,label:fMess+' forecast'});
+  $('#fcCards').innerHTML=fs.sort((a,b)=>b.f.next[0].p-a.f.next[0].p).map(o=>`<button class="fcc${o.m===fMess?' on':''}" data-m="${esc(o.m)}"><div style="font-size:13px">${esc(o.m)}</div><div class="p">${fmt(o.f.next[0].p)} kg</div><div class="note" style="margin:0">likely ${fmt(o.f.next[0].lo)} to ${fmt(o.f.next[0].hi)} · error ${pct(o.f.mape)}</div></button>`).join('');
+  $('#fcCards').querySelectorAll('.fcc').forEach(b=>b.onclick=()=>{fMess=b.dataset.m;renderForecast()})}
+
+/* ---------- menus ---------- */
+let mMeal='Lunch';
+const MEALS=['Breakfast','Lunch','Snacks','Dinner','Non-veg extra'];
+const toneOf=x=>x.part?'part':x.ix==null?'':x.ix>=125?'coral':x.ix>=108?'amber':x.ix<=92?'teal':'';
+const TONE={coral:['--coralsoft','--coralink'],amber:['--ambersoft','--amberink'],teal:['--tealsoft','--tealink']};
+function renderMenus(){const ms=M.messes;if(!ms.includes(mMess))mMess=ms[0];
+  $('#menuChips').innerHTML=ms.map(x=>`<button class="chip${x===mMess?' on':''}" data-m="${esc(x)}">${esc(x)}</button>`).join('');
+  $('#menuChips').querySelectorAll('.chip').forEach(c=>c.onclick=()=>{mMess=c.dataset.m;mDay=null;renderMenus()});
+  $('#mealChips').innerHTML=MEALS.map(x=>`<button class="chip${x===mMeal?' on':''}" data-m="${x}">${x==='Non-veg extra'?'Non-veg':x}</button>`).join('');
+  $('#mealChips').querySelectorAll('.chip').forEach(c=>c.onclick=()=>{mMeal=c.dataset.m;renderMenus()});
+  const rows=M.rows.filter(r=>r.m===mMess),days=[...new Set(rows.map(r=>r.d))].sort();
+  const wl=days.map(d=>{const q=D.by[mMess][D.idx[d]];return q?q.w:null}),wmed=median(wl);
+  const info=days.map((d,k)=>{const w=wl[k];return {d,w,part:w!=null&&wmed&&w<0.55*wmed}});
+  const good=info.filter(x=>x.w!=null&&!x.part),md=median(good.map(x=>x.w));info.forEach(x=>x.ix=x.w!=null&&!x.part&&md?x.w/md*100:null);
+  const byD=Object.fromEntries(info.map(x=>[x.d,x]));
+  if(!mDay||!days.includes(mDay)){const t=good.slice().sort((a,b)=>b.w-a.w)[0];mDay=t?t.d:days[0]}
+  const q=$('#dishQ').value.trim().toLowerCase();
+  const has=d=>q&&rows.some(r=>r.d===d&&r.meal!=='Note'&&r.dish.toLowerCase().includes(q));
+  // hero
+  const hi=good.slice().sort((a,b)=>b.ix-a.ix)[0],lo=good.slice().sort((a,b)=>a.ix-b.ix)[0],np=info.filter(x=>x.part).length;
+  hero($('#mnHero'),kg(md),`of wet waste on a normal day at <span style="white-space:nowrap">${esc(mMess)}</span>, while menus are on file`,`${days.length} days with a menu, ${fmtDate(D.idx[days[0]])} to ${fmtDate(D.idx[days[days.length-1]])}`,[
+    [hi?Math.round(hi.ix)+'%':'–',hi?`highest day, ${fmtDate(D.idx[hi.d])}`:'','coralink'],[lo?Math.round(lo.ix)+'%':'–',lo?`lowest day, ${fmtDate(D.idx[lo.d])}`:'','tealink'],[fmt(np),'days look like partial logs and are left out of comparisons','amberink']]);
+  // calendar
+  const first=D.dt[D.idx[days[0]]],start=new Date(first.getTime()-((first.getDay()+6)%7)*864e5),last=D.dt[D.idx[days[days.length-1]]];
+  let h='<span></span>'+DOW.map(d=>`<span class="wh">${d}</span>`).join('');
+  for(let w=new Date(start);w<=last;w=new Date(w.getTime()+7*864e5)){
+    const we=new Date(w.getTime()+6*864e5),wk=[];for(let k=0;k<7;k++){const dd=new Date(w.getTime()+k*864e5);wk.push(dd.getFullYear()+'-'+String(dd.getMonth()+1).padStart(2,'0')+'-'+String(dd.getDate()).padStart(2,'0'))}
+    const wi=wk.map(d=>byD[d]).filter(x=>x&&x.ix!=null),wavg=mean(wi.map(x=>x.w));
+    h+=`<div class="wk">${w.getDate()} ${MON[w.getMonth()]}<br>to ${we.getDate()} ${MON[we.getMonth()]}${wavg?`<br><b style="color:var(--ink);font-weight:500">${fmt(wavg)}</b> avg`:''}</div>`;
+    wk.forEach(d=>{const x=byD[d];if(!x){h+='<div class="cell empty"></div>';return}
+      const t=toneOf(x),dr=rows.filter(r=>r.d===d),dishes=[...new Set(dr.filter(r=>r.meal===mMeal).flatMap(r=>r.dish.split(' + ')).filter(x=>!/^(roti|chapati|chapati\/puri)$/i.test(x)))],ev=dr.find(r=>r.meal==='Note');
+      const bg=TONE[t]?`background:var(${TONE[t][0]})`:'',pc=x.part?'<span class="pc" style="color:var(--amberink)">partial</span>':x.ix!=null?`<span class="pc" style="color:var(${TONE[t]?TONE[t][1]:'--mute'})">${Math.round(x.ix)}%</span>`:'';
+      const mk=s=>{const e=esc(s);if(!q)return e;const i=s.toLowerCase().indexOf(q);return i<0?e:esc(s.slice(0,i))+'<mark>'+esc(s.slice(i,i+q.length))+'</mark>'+esc(s.slice(i+q.length))};
+      h+=`<button class="cell${x.part?' part':''}${d===mDay?' sel':''}${q?(has(d)?' hit':' dim'):''}" data-d="${d}" style="${x.part?'':bg}" aria-label="${fmtDate(D.idx[d])}, ${x.w==null?'no reading':fmt(x.w)+' kg'}"><span class="top"><span class="dn">${D.dt[D.idx[d]].getDate()} ${MON[D.dt[D.idx[d]].getMonth()]}</span>${pc}</span><span class="kg">${x.w==null?'–':kg(x.w)}</span><ul>${dishes.slice(0,4).map(s=>`<li title="${esc(s)}">${mk(s)}</li>`).join('')||'<li style="color:var(--mute)">not listed</li>'}</ul>${ev?`<span class="ev">${esc(ev.dish)}</span>`:''}</button>`})}
+  $('#menuCal').innerHTML=h;
+  $('#menuCal').querySelectorAll('.cell[data-d]').forEach(b=>b.onclick=()=>{mDay=b.dataset.d;renderMenus();$('#menuDay').scrollIntoView({behavior:'smooth',block:'nearest'})});
+  // dish search summary
+  if(q){const on=info.filter(x=>x.ix!=null&&has(x.d)),off=info.filter(x=>x.ix!=null&&!has(x.d));
+    $('#dishSum').innerHTML=on.length?`<b style="color:var(--ink)">“${esc(q)}”</b> was served on ${on.length} day${on.length>1?'s':''}. Wet waste on those days averaged <b style="color:var(--ink)">${Math.round(mean(on.map(x=>x.ix)))}%</b> of normal, against ${Math.round(mean(off.map(x=>x.ix)))}% on other days.${on.length<4?' Too few days to read much into it.':''}`:`No dish matching “${esc(q)}” at ${esc(mMess)}.`}
+  else $('#dishSum').textContent='Search a dish to highlight every day it was served and compare waste on those days.';
+  // day detail
+  const cur=byD[mDay],dr=rows.filter(r=>r.d===mDay),ev=dr.filter(r=>r.meal==='Note');const t=toneOf(cur);
+  $('#menuDay').innerHTML=`<h3>${fmtDate(D.idx[mDay])} · ${esc(mMess)}</h3><p class="sub">${cur.w==null?'No waste reading':`${kg(cur.w)} wet waste`} ${cur.part?'<span class="tag t-amber">looks like a partial log</span>':cur.ix!=null?`<span class="tag ${t?'t-'+t:'t-grey'}">${Math.round(cur.ix)}% of normal</span>`:''}</p>${ev.map(e=>`<p class="note" style="margin:0 0 10px"><span class="tag t-amber">note</span> ${esc(e.dish)}</p>`).join('')}<dl class="meal">${MEALS.map(ml=>{const ds=dr.filter(r=>r.meal===ml).map(r=>r.dish);return ds.length?`<dt>${ml}</dt><dd>${ds.map(esc).join(', ')}</dd>`:''}).join('')}</dl>`;
+  // dish table
+  const ix=Object.fromEntries(info.filter(x=>x.ix!=null).map(x=>[x.d,x.ix])),g={};
+  rows.filter(r=>r.meal===mMeal).forEach(r=>r.dish.split(' + ').forEach(dsh=>{if(ix[r.d]==null)return;const k=dsh.trim();if(/^(roti|chapati|chapati\/puri)$/i.test(k))return;(g[k]=g[k]||{a:[],d:new Set()});if(!g[k].d.has(r.d)){g[k].d.add(r.d);g[k].a.push(ix[r.d])}}));
+  const list=Object.entries(g).map(([k,o])=>({k,n:o.a.length,v:mean(o.a)})).filter(x=>x.n>=3).sort((a,b)=>b.v-a.v);
+  $('#dishTable').innerHTML=`<p class="note" style="margin:0 0 6px">${mMeal} dishes. Change the meal above the calendar to see others.</p>`+(list.length?`<table><thead><tr><th>Dish</th><th class="num">Days</th><th class="num">Waste vs normal</th></tr></thead><tbody>${list.map(x=>{const tt=x.v>=125?'coral':x.v>=108?'amber':x.v<=92?'teal':'grey';return `<tr class="click" data-k="${esc(x.k)}"><td>${esc(x.k)}</td><td class="num">${x.n}</td><td class="num"><span class="tag t-${tt}">${Math.round(x.v)}%</span></td></tr>`}).join('')}</tbody></table>`:'<p class="note">Not enough repeated dishes for this meal.</p>');
+  $('#dishTable').querySelectorAll('tr[data-k]').forEach(tr=>tr.onclick=()=>{$('#dishQ').value=tr.dataset.k;renderMenus();$('#menuCal').scrollIntoView({behavior:'smooth',block:'center'})});
+}
+/* ---------- data page ---------- */
+function renderData(){const el=$('#trust');const W=el.clientWidth;
+  el.innerHTML=`<div style="display:grid;grid-template-columns:${W<420?70:96}px repeat(${D.months.length},minmax(0,1fr));gap:3px;font-size:12px;align-items:center"><span></span>${D.months.map(m=>`<span style="text-align:center;color:var(--mute)">${MON[+m.slice(5)-1].slice(0,W<420?1:3)}</span>`).join('')}${D.messes.map(m=>`<span>${esc(m.replace('Tansa House','Tansa'))}</span>`+D.months.map((mo,k)=>{let n=0;D.by[m].forEach((r,i)=>{if(r&&r.f!=null&&monthOf(i)===k)n++});const c=D.copied[m+'|'+mo];
+    return `<span style="height:18px;border-radius:3px;background:${c?css('--amber'):n>=10?css('--teal2'):css('--soft')}" title="${esc(m)} ${MON[k]}: ${c?'copied from '+c:n>=10?n+' days recorded':'missing'}"></span>`}).join('')).join('')}</div>`;
+  let typ=0,low=0;D.messes.forEach(m=>D.by[m].forEach(r=>{if(r&&r.flag==='typo')typ++;if(r&&r.flag==='low')low++}));
+  const nc=Object.keys(D.copied).length;
+  $('#method').innerHTML=[`Source: ${esc(D.source)}.`,`Dates were rebuilt from row order, because days 1 to 12 of every month had day and month swapped and some were mistyped.`,
+    `${nc} mess-months repeat another month's numbers exactly (mostly June). They are shaded on profiles and left out while "Trusted data only" is on.`,
+    `${typ} single days are three or more times the mess's usual level and are treated as likely typos. ${low} days are under half the usual level and may be partial logs.`,
+    `"Usual" means the median of the 15 days around that day for the same mess. Dry waste is not included.`,
+    `Per-student figures are not shown yet. They need headcounts for each mess (students eating there, by month or by day). Once those are added, the Per student switch will divide each day's waste by that count.`,
+    `Menus cover H-17 (3 Aug to 30 Sep) and H-7/8/21 (31 Aug to 30 Sep). The H-17 files for 7 Sep and 14 Sep are identical.`].map(t=>`<li>${t}</li>`).join('')}
+function csvAll(filtered){const h='date,mess,wet_kg,veg_cutting_kg,food_waste_kg,data_status,flag\n';const out=[];
+  D.messes.forEach(m=>{if(filtered&&S.mess!=='all'&&m!==S.mess)return;D.by[m].forEach((r,i)=>{if(!r)return;if(filtered&&!inRange(i))return;if(filtered&&S.trust&&(r.s==='c'||r.flag==='typo'))return;
+    out.push([D.dates[i],m,r.w??'',r.v??'',r.f??'',r.s==='c'?'copied':'recorded',r.flag||''].join(','))})});
+  return h+out.sort().join('\n')}
+function csvMenus(){return 'date,mess,meal,dish\n'+M.rows.map(r=>[r.d,r.m,r.meal,'"'+r.dish.replace(/"/g,'""')+'"'].join(',')).join('\n')}
+let dlApi;
+async function download(name,text){const msg=$('#dlMsg');msg.textContent='';
+  try{if(dlApi===undefined)dlApi=window.claude&&window.claude.use?await window.claude.use('downloads'):null;
+    if(dlApi){await dlApi.save({filename:name,data:text});msg.textContent=name+' saved.';return}}catch(e){if(dlApi){msg.textContent='Download was cancelled or blocked.';return}}
+  try{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([text],{type:'text/csv'}));a.download=name;document.body.appendChild(a);a.click();a.remove();msg.textContent=name+' downloaded.'}
+  catch(e){try{await navigator.clipboard.writeText(text);msg.textContent='Download is blocked here, so the CSV was copied. Paste it into a sheet.'}catch(_){msg.textContent='Download is blocked in this view.'}}}
+}
+</script>
+</body>
+</html>
